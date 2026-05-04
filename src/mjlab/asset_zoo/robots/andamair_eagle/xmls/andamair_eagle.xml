@@ -1,0 +1,184 @@
+<mujoco model="andamair_eagle_legs_v0">
+  <!--
+    Andamair Eagle stub model: legs only (12 DOF + freejoint).
+    Author: clean-room from vault Scaling.md and Platform.md.
+    Sources: Andamair/Engineering/R&D/Scaling.md (segment lengths,
+    joint ranges, mass budget); Platform.md (4-class actuator table).
+    Phase 1: pelvis lumps all upper-body mass. Phase 2 will add the
+    waist/torso/arms/neck chain.
+  -->
+
+  <compiler angle="radian" autolimits="true"/>
+
+  <option timestep="0.002" iterations="3" ls_iterations="5"/>
+
+  <default>
+    <default class="andamair">
+      <default class="visual">
+        <geom group="2" type="capsule" contype="0" conaffinity="0" density="0"
+              material="silver"/>
+      </default>
+      <default class="collision">
+        <geom group="3" type="capsule" rgba="0.2 0.6 0.2 0.3"
+              contype="1" conaffinity="1"/>
+      </default>
+      <default class="foot_collision">
+        <geom group="3" type="box" rgba="0.2 0.6 0.2 0.3"
+              contype="1" conaffinity="1" condim="3" priority="1"
+              friction="0.6 0.005 0.0001"/>
+      </default>
+      <site group="5" rgba="1 0 0 1" size="0.01"/>
+    </default>
+  </default>
+
+  <asset>
+    <material name="silver" rgba="0.7 0.7 0.7 1"/>
+    <material name="black" rgba="0.2 0.2 0.2 1"/>
+  </asset>
+
+  <worldbody>
+    <!--
+      Pelvis: includes the *entire* upper body as lumped mass for Phase 1.
+      Lumped mass = pelvis(4) + torso(14) + arms(8) + head/neck(2) = 28 kg.
+      Inertia approximated as a uniform box 0.32 x 0.20 x 0.50 (W x D x H)
+      whose center sits 0.20 m above pelvis joint (i.e. mid-torso).
+    -->
+    <body name="pelvis" pos="0 0 0.924" childclass="andamair">
+      <freejoint name="floating_base_joint"/>
+      <inertial pos="0 0 0.20" mass="28.8"
+                diaginertia="0.86 0.96 0.32"/>
+      <site name="imu_in_pelvis" pos="0 0 0"/>
+      <camera name="tracking" pos="2.0 -1.5 0.5"
+              xyaxes="0.6 0.8 0 -0.2 0.15 0.97" mode="trackcom"/>
+
+      <!-- Visual placeholder for upper body (helps see orientation in viewer).
+           Dimensions: 20 cm front-back (X) x 32 cm shoulder-shoulder (Y) x 50 cm tall (Z) -->
+      <geom class="visual" type="box" size="0.10 0.16 0.25" pos="0 0 0.20"/>
+      <geom class="visual" type="sphere" size="0.10" pos="0 0 0.55"
+            material="black"/>
+
+      <!-- ========== LEFT LEG ========== -->
+      <body name="left_hip_pitch_link" pos="0 0.071 -0.131">
+        <inertial pos="0 0 -0.04" mass="1.0"
+                  diaginertia="0.0018 0.0018 0.0018"/>
+        <joint name="left_hip_pitch_joint" axis="0 1 0"
+               range="-2.094 0.995"/>
+        <geom class="visual" size="0.05" fromto="0 0 0 0 0 -0.06"/>
+
+        <body name="left_hip_roll_link" pos="0 0 -0.064">
+          <inertial pos="0 0 -0.06" mass="0.7"
+                    diaginertia="0.0010 0.0010 0.0008"/>
+          <joint name="left_hip_roll_joint" axis="1 0 0"
+                 range="-0.785 0.785"/>
+          <geom class="visual" size="0.05" fromto="0 0 0 0 0 -0.10"/>
+
+          <body name="left_hip_yaw_link" pos="0 0 -0.116">
+            <inertial pos="0 0 -0.134" mass="1.9"
+                      diaginertia="0.013 0.013 0.0035"/>
+            <joint name="left_hip_yaw_joint" axis="0 0 1"
+                   range="-0.785 0.785"/>
+            <geom class="visual" size="0.055"
+                  fromto="0 0 -0.04 0 0 -0.228"/>
+            <geom class="collision" name="left_thigh_collision" size="0.055"
+                  fromto="0 0 -0.04 0 0 -0.228"/>
+
+            <body name="left_knee_link" pos="0 0 -0.268">
+              <inertial pos="0 0 -0.135" mass="1.5"
+                        diaginertia="0.012 0.012 0.0025"/>
+              <joint name="left_knee_joint" axis="0 1 0"
+                     range="0 1.501"/>
+              <geom class="visual" size="0.05"
+                    fromto="0 0 -0.04 0 0 -0.255"/>
+              <geom class="collision" name="left_shin_collision" size="0.05"
+                    fromto="0 0 -0.04 0 0 -0.255"/>
+
+              <body name="left_ankle_pitch_link" pos="0 0 -0.295">
+                <inertial pos="0 0 -0.006" mass="0.5"
+                          diaginertia="0.0005 0.0005 0.0005"/>
+                <joint name="left_ankle_pitch_joint" axis="0 1 0"
+                       range="-0.349 0.506"/>
+                <geom class="visual" size="0.04"
+                      fromto="0 0 0 0 0 -0.013"/>
+
+                <body name="left_ankle_roll_link" pos="0 0 -0.013">
+                  <inertial pos="0.02 0 -0.03" mass="1.0"
+                            diaginertia="0.0020 0.0030 0.0040"/>
+                  <joint name="left_ankle_roll_joint" axis="1 0 0"
+                         range="-0.105 0.105"/>
+                  <site name="left_foot" pos="0.02 0 -0.022"/>
+                  <!-- Foot: rigid metal plate, 0.129 x 0.088 x 0.03 m -->
+                  <geom class="visual" type="box"
+                        size="0.0645 0.044 0.015" pos="0.02 0 -0.022"
+                        material="black"/>
+                  <geom class="foot_collision" name="left_foot_collision"
+                        size="0.0645 0.044 0.015" pos="0.02 0 -0.022"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+
+      <!-- ========== RIGHT LEG ========== -->
+      <body name="right_hip_pitch_link" pos="0 -0.071 -0.131">
+        <inertial pos="0 0 -0.04" mass="1.0"
+                  diaginertia="0.0018 0.0018 0.0018"/>
+        <joint name="right_hip_pitch_joint" axis="0 1 0"
+               range="-2.094 0.995"/>
+        <geom class="visual" size="0.05" fromto="0 0 0 0 0 -0.06"/>
+
+        <body name="right_hip_roll_link" pos="0 0 -0.064">
+          <inertial pos="0 0 -0.06" mass="0.7"
+                    diaginertia="0.0010 0.0010 0.0008"/>
+          <joint name="right_hip_roll_joint" axis="1 0 0"
+                 range="-0.785 0.785"/>
+          <geom class="visual" size="0.05" fromto="0 0 0 0 0 -0.10"/>
+
+          <body name="right_hip_yaw_link" pos="0 0 -0.116">
+            <inertial pos="0 0 -0.134" mass="1.9"
+                      diaginertia="0.013 0.013 0.0035"/>
+            <joint name="right_hip_yaw_joint" axis="0 0 1"
+                   range="-0.785 0.785"/>
+            <geom class="visual" size="0.055"
+                  fromto="0 0 -0.04 0 0 -0.228"/>
+            <geom class="collision" name="right_thigh_collision" size="0.055"
+                  fromto="0 0 -0.04 0 0 -0.228"/>
+
+            <body name="right_knee_link" pos="0 0 -0.268">
+              <inertial pos="0 0 -0.135" mass="1.5"
+                        diaginertia="0.012 0.012 0.0025"/>
+              <joint name="right_knee_joint" axis="0 1 0"
+                     range="0 1.501"/>
+              <geom class="visual" size="0.05"
+                    fromto="0 0 -0.04 0 0 -0.255"/>
+              <geom class="collision" name="right_shin_collision" size="0.05"
+                    fromto="0 0 -0.04 0 0 -0.255"/>
+
+              <body name="right_ankle_pitch_link" pos="0 0 -0.295">
+                <inertial pos="0 0 -0.006" mass="0.5"
+                          diaginertia="0.0005 0.0005 0.0005"/>
+                <joint name="right_ankle_pitch_joint" axis="0 1 0"
+                       range="-0.349 0.506"/>
+                <geom class="visual" size="0.04"
+                      fromto="0 0 0 0 0 -0.013"/>
+
+                <body name="right_ankle_roll_link" pos="0 0 -0.013">
+                  <inertial pos="0.02 0 -0.03" mass="1.0"
+                            diaginertia="0.0020 0.0030 0.0040"/>
+                  <joint name="right_ankle_roll_joint" axis="1 0 0"
+                         range="-0.105 0.105"/>
+                  <site name="right_foot" pos="0.02 0 -0.022"/>
+                  <geom class="visual" type="box"
+                        size="0.0645 0.044 0.015" pos="0.02 0 -0.022"
+                        material="black"/>
+                  <geom class="foot_collision" name="right_foot_collision"
+                        size="0.0645 0.044 0.015" pos="0.02 0 -0.022"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
