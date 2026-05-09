@@ -40,8 +40,8 @@ dependencies = [
   "mujoco-warp>=3.8.0",
   "mujoco>=3.8.0",
   "trimesh>=4.8.3",
-  "viser>=1.0.26",
-  "mjviser>=0.0.13",
+  "viser>=1.0.27",
+  "mjviser>=0.0.14",
   "mediapy>=1.2.6",
   "imageio-ffmpeg",
   "tensordict",
@@ -102,7 +102,7 @@ conflicts = [
 # reject them. This override loosens the constraint for uv resolution only.
 override-dependencies = ["mujoco>=3.8.0.dev0"]
 constraint-dependencies = [
-  "GitPython>=3.1.47",
+  "GitPython>=3.1.49",
   "lxml>=6.1.0",
 ]
 required-environments = [
@@ -140,7 +140,7 @@ torch = [
   { index = "pytorch-cpu", extra = "cpu", marker = "sys_platform != 'darwin'" },
 ]
 mujoco = { index = "mujoco" }
-mujoco-warp = { git = "https://github.com/google-deepmind/mujoco_warp", rev = "6f235d4" }
+mujoco-warp = { git = "https://github.com/google-deepmind/mujoco_warp", rev = "88b55fc2696960b927bc12584994bb8412b36558" }
 mjviser = { git = "https://github.com/mujocolab/mjviser", rev = "1bdfd6fe79066b847a5f430000fcfbb53ec31a6f" }
 
 [tool.ruff]
